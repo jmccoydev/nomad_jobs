@@ -1,10 +1,10 @@
 job "jenkins" {
   type = "service"
-   datacenters = ["dc1"]
-    update {
-      stagger      = "30s"
-        max_parallel = 1
-    }
+  datacenters = ["dc1"]
+  update {
+    stagger      = "30s"
+      max_parallel = 1
+  }
 #  constraint {
 #    attribute = "${driver.java.version}"
 #    operator  = ">"

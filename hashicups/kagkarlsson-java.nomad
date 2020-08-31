@@ -2,7 +2,7 @@
 job "java" {
   datacenters = ["dc1"]
 
-  type = "service"
+  type = "system"
 
   update {
     stagger = "10s"
@@ -28,7 +28,8 @@ job "java" {
       }
 
       artifact {
-        source = "http://localhost:8081/webapp.jar"
+        # source = "http://localhost:8081/webapp.jar"
+        source = "https://github.com/phanclan/nomad_jobs/raw/master/hashicups/webapp.jar"
         destination = "/tmp"
       }
       resources {
