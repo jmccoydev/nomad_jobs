@@ -1,21 +1,20 @@
 job "frontend" {
   multiregion {
     strategy {
-      max_parallel = 1
+      max_parallel = 2
       # on_failure   = "fail_all"
     }
     region "west" {
       count       = 1
       datacenters = ["dc1"]
     }
-    # region "east" {
-    #   count       = 1
-    #   datacenters = ["east-1", "east-2"]
-    # }
+    region "east" {
+      count       = 1
+      datacenters = ["east-1"]
+    }
   }
 
-  type     = "system"
-
+  type     = "service"
   group "frontend" {
     count = 0
 
@@ -73,7 +72,7 @@ EOF
         network {
           mbits = 10
           port  "http"{
-            static = 80
+            static = 81
           }
         }
       }

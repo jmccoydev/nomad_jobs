@@ -1,5 +1,5 @@
 job "frontend" {
-  # region "west"
+  region = "west"
   datacenters = ["dc1"]
   type     = "system"
 
@@ -44,6 +44,11 @@ server {
     # Use location exposed by Consul connect
     location /api {
         proxy_pass http://public-api-server.service.consul:8080;
+        # Need the next 4 lines. Else browser might think X-site.
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
     }
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
