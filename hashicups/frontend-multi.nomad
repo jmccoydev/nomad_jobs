@@ -1,10 +1,23 @@
 job "frontend" {
-  # region "west"
-  datacenters = ["dc1"]
+  multiregion {
+    strategy {
+      max_parallel = 1
+      # on_failure   = "fail_all"
+    }
+    region "west" {
+      count       = 1
+      datacenters = ["dc1"]
+    }
+    # region "east" {
+    #   count       = 1
+    #   datacenters = ["east-1", "east-2"]
+    # }
+  }
+
   type     = "system"
 
   group "frontend" {
-    count = 1
+    count = 0
 
     restart {
       attempts = 10
