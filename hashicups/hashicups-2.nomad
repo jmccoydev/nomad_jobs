@@ -1,7 +1,7 @@
 job "hashicups" {
   multiregion {
     strategy {
-      max_parallel = 1
+      max_parallel = 2
       on_failure   = "fail_all"
     }
     region "west" {
