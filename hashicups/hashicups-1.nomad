@@ -1,17 +1,17 @@
 job "hashicups" {
   multiregion {
     strategy {
-      max_parallel = 2
-      # on_failure   = "fail_all"
+      max_parallel = 1
+      on_failure   = "fail_all"
     }
     region "west" {
       # count       = 1 #optional
       datacenters = ["dc1"]
     }
-    region "east" {
-      # count       = 1 #optional
-      datacenters = ["east-1"]
-    }
+    # region "east" {
+    #   # count       = 1 #optional
+    #   datacenters = ["east-1"]
+    # }
   }
 
   type     = "service"
@@ -156,7 +156,7 @@ EOF
 
       env = {
         BIND_ADDRESS = ":8080"
-        PRODUCTS_API_URI = "http://products-api-server.service.consul:9090"
+        PRODUCT_API_URI = "http://products-api-server.service.consul:9090"
       }
 
       config {
@@ -195,7 +195,7 @@ EOF
   }
 
   group "frontend" {
-    count = 1
+    count = 3
 
     restart {
       attempts = 10
@@ -227,6 +227,10 @@ server {
     server_name  localhost;
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
+    # proxy_http_version 1.1;
+    # proxy_set_header Upgrade $http_upgrade;
+    # proxy_set_header Connection "Upgrade";
+    # proxy_set_header Host $host;
     location / {
         root   /usr/share/nginx/html;
         index  index.html index.htm;
@@ -256,7 +260,7 @@ EOF
         network {
           mbits = 10
           port  "http"{
-            static = 81
+            static = 80
           }
         }
       }
