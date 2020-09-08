@@ -131,6 +131,11 @@ EOF
       service {
         name = "products-api-server"
         port = "http_port"
+        tags = [
+          "traefik.enable=true",
+          "traefik.http.routers.products.entrypoints=products",
+          "traefik.http.routers.products.rule=Path(`/`)",
+        ]
         check {
           type     = "http"
           path     = "/health"
@@ -183,7 +188,8 @@ EOF
         port = "pub_api"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.public.rule=Path(`/public`)",
+          "traefik.http.routers.public.entrypoints=public",
+          "traefik.http.routers.public.rule=Path(`/`)",
         ]
         check {
           type     = "tcp"
@@ -272,6 +278,9 @@ EOF
         tags = [
           # "traefik.enable=true",
           # "traefik.http.routers.frontend.rule=Path(`/frontend`)",
+          "traefik.enable=true",
+          "traefik.http.routers.frontend.entrypoints=frontend",
+          "traefik.http.routers.frontend.rule=Path(`/`)",
         ]
 
         check {

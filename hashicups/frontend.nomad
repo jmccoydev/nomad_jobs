@@ -75,8 +75,9 @@ EOF
         port = "http"
 
         tags = [
-          # "traefik.enable=true",
-          # "traefik.http.routers.frontend.rule=Path(`/frontend`)",
+          "traefik.enable=true",
+          "traefik.http.routers.frontend.entrypoints=frontend",
+          "traefik.http.routers.frontend.rule=Path(`/`)",
         ]
 
         check {

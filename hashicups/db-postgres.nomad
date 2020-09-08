@@ -32,7 +32,7 @@ job "postgres" {
         read_only   = false
         }
 
-     config {
+      config {
         image = "hashicorpdemoapp/product-api-db:v0.0.11"
         dns_servers = ["172.17.0.1"]
         network_mode = "host"
