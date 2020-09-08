@@ -206,6 +206,10 @@ EOF
   }
 
   group "frontend" {
+    constraint {
+      attribute = "${node.unique.name)"
+      value = "server-a-1"
+    }
     count = 1
 
     restart {
