@@ -1,20 +1,30 @@
 job "hashicups" {
-  datacenters = ["dc1","east-1"]
+  # datacenters = ["dc1","east-1"]
   multiregion {
     strategy {
       #max_parallel = 2
-      #on_failure   = "fail_all"
+      on_failure   = "fail_all"
+      # on_failure = "fail_local"
     }
     region "west" {
       # count       = 1 #optional
-      #datacenters = ["dc1"]
+      datacenters = ["dc1"]
     }
     region "east" {
       # count       = 1 #optional
-      #datacenters = ["east-1"]
+      datacenters = ["east-1"]
     }
   }
-
+  update {
+    max_parallel      = 1
+    min_healthy_time  = "10s"
+    healthy_deadline  = "2m"
+    progress_deadline = "3m"
+    auto_revert       = true
+    auto_promote      = true
+    canary            = 1
+    stagger           = "30s"
+  }
   type     = "service"
   group "postgres" {
     count = 1
@@ -196,7 +206,7 @@ EOF
   }
 
   group "frontend" {
-    count = 3
+    count = 1
 
     restart {
       attempts = 10
