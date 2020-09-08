@@ -20,6 +20,6 @@ resource "nomad_job" "tfc-agent" {
 
 output "job" { value = data.template_file.job.rendered }
 
-# resource "nomad_job" "hashicups" {
-#   jobspec = file("${path.module}/hashicups-2.nomad")
-# }
+resource "nomad_job" "hashicups" {
+  jobspec = file("${path.module}/hashicups-2.nomad")
+}
