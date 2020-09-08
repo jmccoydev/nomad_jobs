@@ -207,7 +207,6 @@ EOF
 
   group "frontend" {
     constraint {
-      # attribute = "${node.unique.name}"
       attribute = "${attr.platform.gce.machine-type}"
       value = "n2-highcpu-2"
     }
