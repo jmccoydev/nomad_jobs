@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 set -ex
 ###########
 # Set Vault env vars for client usage
@@ -21,11 +21,11 @@ echo "export VAULT_TOKEN=$VAULT_TOKEN" >> /root/.bashrc
 vault auth enable kubernetes
 
 export SA_NAME="products-api"
-export SA_NAMESPACE=$(kubectl get sa $SA_NAME -o jsonpath="{.metadata.namespace}")
-export VAULT_SECRET_NAME=$(kubectl get sa $SA_NAME -o jsonpath="{.secrets[*]['name']}")
-export SA_JWT_TOKEN=$(kubectl get secret $VAULT_SECRET_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
-export SA_CA_CRT="$(kubectl get secret $VAULT_SECRET_NAME -o jsonpath="{.data['ca\.crt']}" | base64 --decode; echo)"
-export K8S_HOST=$(kubectl get svc kubernetes -o=json | jq -r .spec.clusterIP)
+# export SA_NAMESPACE=$(kubectl get sa $SA_NAME -o jsonpath="{.metadata.namespace}")
+# export VAULT_SECRET_NAME=$(kubectl get sa $SA_NAME -o jsonpath="{.secrets[*]['name']}")
+# export SA_JWT_TOKEN=$(kubectl get secret $VAULT_SECRET_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
+# export SA_CA_CRT="$(kubectl get secret $VAULT_SECRET_NAME -o jsonpath="{.data['ca\.crt']}" | base64 --decode; echo)"
+# export K8S_HOST=$(kubectl get svc kubernetes -o=json | jq -r .spec.clusterIP)
 
 # Tell Vault how to communicate with the Kubernetes cluster
 # vault write auth/kubernetes/config \
@@ -46,7 +46,7 @@ export K8S_HOST=$(kubectl get svc kubernetes -o=json | jq -r .spec.clusterIP)
 # vault secrets enable kv
 
 # Create the KV secrets engine for static secrets
-vault secrets enable -path="kv" kv
+vault secrets enable -path="kv" kv || echo "already in use"
 
 # Place an example secret in a "shared" mount to demo a bad secret management practice
 mkdir -p /share/
