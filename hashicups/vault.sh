@@ -18,7 +18,7 @@ echo "export VAULT_TOKEN=$VAULT_TOKEN" >> /root/.bashrc
 ###########
 # Set up the Kubernetes auth method with k3s
 ###########
-vault auth enable kubernetes
+# vault auth enable kubernetes
 
 export SA_NAME="products-api"
 # export SA_NAMESPACE=$(kubectl get sa $SA_NAME -o jsonpath="{.metadata.namespace}")
@@ -46,7 +46,7 @@ export SA_NAME="products-api"
 # vault secrets enable kv
 
 # Create the KV secrets engine for static secrets
-vault secrets enable -path="kv" kv || echo "already in use"
+vault secrets enable -path="kv" kv || true
 
 # Place an example secret in a "shared" mount to demo a bad secret management practice
 mkdir -p /share/
