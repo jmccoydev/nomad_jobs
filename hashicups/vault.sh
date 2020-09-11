@@ -53,8 +53,7 @@ mkdir -p /share/
 echo "username=postgres
 password=password" > /share/postgres-product-creds.txt
 
-# Don't change the password here, the user will update it in a challenge.
-vault kv put kv/db/postgres/product-db-creds username=postgres password=replacemeplz
+vault kv put kv/db/postgres/product-db-creds username=postgres password=password
 
 
 ###########
