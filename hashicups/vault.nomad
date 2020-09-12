@@ -18,6 +18,6 @@ job "vault" {
     }
   }
 }
-# Run group on node: server-a-1
+# Run group on node: server-a-1. Run in dc1.
 # Download binary and extract.
 # Run binary with arguments.

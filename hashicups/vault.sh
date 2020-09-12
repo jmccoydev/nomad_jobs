@@ -53,7 +53,7 @@ mkdir -p /share/
 echo "username=postgres
 password=password" > /share/postgres-product-creds.txt
 
-vault kv put kv/db/postgres/product-db-creds username=postgres password=password
+vault kv put kv/db/postgres/product-db-creds username=root password=password
 
 
 ###########
@@ -93,3 +93,5 @@ path "kv/db/postgres/product-db-creds" {
 EOF
 
 vault policy write products-api /root/policies/products-api-policy.hcl
+
+vault audit enable file file_path=/var/log/audit.log log_raw=true
