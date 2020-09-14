@@ -13,8 +13,8 @@ job "hashicups" {
     #   datacenters = ["east-1"]
     # }
   }
-
   type     = "service"
+
   group "postgres" {
     count = 1
 
@@ -47,8 +47,8 @@ job "hashicups" {
         port_map {
           db = 5432
         }
-
       }
+
       env {
           POSTGRES_USER="root"
           POSTGRES_PASSWORD="password"
@@ -64,7 +64,6 @@ job "hashicups" {
         cpu = 100 #1000
         memory = 300 #1024
         network {
-          #mbits = 10
           port  "db"  {
             static = 5432
           }
@@ -82,8 +81,8 @@ job "hashicups" {
           timeout  = "2s"
         }
       }
-    }
-  }
+    } # end postgres task
+  } # end postgres group
 
   group "products-api" {
     count = 1
