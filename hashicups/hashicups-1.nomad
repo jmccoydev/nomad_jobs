@@ -142,8 +142,8 @@ EOF
           timeout  = "2s"
         }
       }
-    }
-  }
+    } # end products-api task
+  } # end products-api group
 
   group "public-api" {
     count = 1
