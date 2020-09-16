@@ -1,5 +1,4 @@
 job "hashicups" {
-  # datacenters = ["dc1","east-1"]
   multiregion {
     strategy {
       #max_parallel = 2
@@ -299,3 +298,4 @@ EOF
     }
   }
 }
+# To stop this job: nomad job stop -global hashicups
