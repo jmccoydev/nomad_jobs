@@ -1,5 +1,5 @@
 job "postgres-sync-service" {
-  datacenters = ["east-1"]
+  datacenters = ["dc1"]
   type = "service"
 
   group "symmetric-process" {
@@ -13,7 +13,10 @@ job "postgres-sync-service" {
     }
     task "setup-db"{
         #Should only be done after sync is initally setup, so will error on first run
-        driver = "exec"
+        driver = "raw_exec"
+      lifecycle {
+        hook    = "prestart"
+      }
         env {
             PGPASSWORD ="password"
         }
@@ -56,7 +59,7 @@ VALUES ('public.ingredients_id_seq', 'primary_2_primary', 1, 10, CURRENT_TIMESTA
         config {
           command = "psql"
           args = [
-          "-h postgres.service.consul products < local/setupdb.sql"
+          "-U","root","-h","postgres.service.dc1.consul","products","-f","local/setupdb.sql"
           ]
       }
     }
@@ -67,20 +70,20 @@ VALUES ('public.ingredients_id_seq', 'primary_2_primary', 1, 10, CURRENT_TIMESTA
       }
         template {
         data = <<EOH
-sync.url=http\://symds.service.${node.datacenter}.consul\:31415/sync/products-${node.datacenter}
+sync.url=http\://symds.service.{{ env "node.datacenter" }}.consul\:31415/sync/products-{{ env "node.datacenter" }}
 group.id=primary
 db.init.sql=
-registration.url=http\://symds.service.dc1.consul\:31415/sync/products-dc1
+registration.url=http\://symds.service.dc1.consul\:31415/sync/products-{{ env "node.datacenter" }}
 db.driver=org.postgresql.Driver
 db.user=root
 db.password=password
-db.url=jdbc\:postgresql\://postgres.service.${node.datacenter}.consul/products?protocolVersion\=3&stringtype\=unspecified&socketTimeout\=300&tcpKeepAlive\=true
-engine.name=products-${node.datacenter}
-external.id=products-${node.datacenter}
+db.url=jdbc\:postgresql\://postgres.service.{{ env "node.datacenter" }}.consul/products?protocolVersion\=3&stringtype\=unspecified&socketTimeout\=300&tcpKeepAlive\=true
+engine.name=products-{{ env "node.datacenter" }}
+external.id=products-{{ env "node.datacenter" }}
 db.validation.query=select 1
 cluster.lock.enabled=false
         EOH
-        destination = "local/symmetric-server-3.12.3/engines/east-1.properties"
+        destination = "local/symmetric-server-3.12.3/engines/${node.datacenter}.properties"
         }
       config {
           command = "local/symmetric-server-3.12.3/bin/sym"
