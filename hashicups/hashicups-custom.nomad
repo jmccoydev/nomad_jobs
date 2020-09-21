@@ -5,11 +5,6 @@ job "hashicups" {
   # Define Nomad Scheduler to be used (Service/Batch/System)
   type  = "service"
 
-  # Define update strategie
-  update {
-    canary  = 1
-  }
-
   # Each component is defined within it's own Group
   group "postgres" {
     count = 1
@@ -165,6 +160,11 @@ EOF
       interval = "5m"
       delay    = "25s"
       mode     = "delay"
+    }
+
+      # Define update strategy for API component
+    update {
+      canary  = 1
     }
 
     task "public-api" {
