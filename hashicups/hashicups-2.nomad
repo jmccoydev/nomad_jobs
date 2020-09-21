@@ -14,20 +14,20 @@ job "hashicups" {
       datacenters = ["east-1"]
     }
   }
+
+  # Define Nomad Scheduler to be used (Service/Batch/System)
+  type  = "service"
+
+  # Define update strategie
   update {
-    max_parallel      = 1
-    min_healthy_time  = "10s"
-    healthy_deadline  = "2m"
-    progress_deadline = "3m"
-    auto_revert       = true
-    auto_promote      = true
-    canary            = 1
-    stagger           = "30s"
+    canary  = 1
   }
-  type     = "service"
+
+  # Each component is defined within it's own Group
   group "postgres" {
     count = 1
 
+    # Host volume on which to store Postgres Data.  Nomad will confirm the client offers the same volume for placement.
     volume "pgdata" {
       type      = "host"
       read_only = false
@@ -41,6 +41,7 @@ job "hashicups" {
       mode = "delay"
     }
 
+    #Actual Postgres task using the Docker Driver
     task "postgres" {
       driver = "docker"
 
@@ -50,6 +51,7 @@ job "hashicups" {
         read_only   = false
         }
 
+     # Postgres Docker image location and configuration
      config {
         image = "hashicorpdemoapp/product-api-db:v0.0.11"
         dns_servers = ["172.17.0.1"]
@@ -57,8 +59,9 @@ job "hashicups" {
         port_map {
           db = 5432
         }
-
       }
+
+      # Task relevant environment variables necessary
       env {
           POSTGRES_USER="root"
           POSTGRES_PASSWORD="password"
@@ -70,17 +73,18 @@ job "hashicups" {
         max_file_size = 15
       }
 
+      # Host machine resources required
       resources {
         cpu = 100 #1000
         memory = 300 #1024
         network {
-          #mbits = 10
           port  "db"  {
             static = 5432
           }
         }
       }
 
+      # Service definition to be sent to Consul
       service {
         name = "postgres"
         port = "db"
@@ -92,9 +96,10 @@ job "hashicups" {
           timeout  = "2s"
         }
       }
-    }
-  }
+    } # end postgres task
+  } # end postgres group
 
+  # Products API component that interfaces with the Postgres database
   group "products-api" {
     count = 1
     restart {
@@ -107,6 +112,7 @@ job "hashicups" {
     task "products-api" {
       driver = "docker"
 
+      # Creation of the template file defining how the API will access the database
       template {
         destination   = "/secrets/db-creds"
         data = <<EOF
@@ -118,9 +124,12 @@ job "hashicups" {
 EOF
       }
 
+      # Task relevant environment variables necessary
       env = {
         "CONFIG_FILE" = "/secrets/db-creds"
       }
+
+      # Product-api Docker image location and configuration
       config {
         image = "hashicorpdemoapp/product-api:v0.0.11"
         dns_servers = ["172.17.0.1"]
@@ -128,6 +137,8 @@ EOF
           http_port = 9090
         }
       }
+
+      # Host machine resources required
       resources {
         #cpu    = 500
         #memory = 1024
@@ -138,9 +149,16 @@ EOF
           }
         }
       }
+
+      # Service definition to be sent to Consul with corresponding health check
       service {
         name = "products-api-server"
         port = "http_port"
+        tags = [
+          "traefik.enable=true",
+          "traefik.http.routers.products.entrypoints=products",
+          "traefik.http.routers.products.rule=Path(`/`)",
+        ]
         check {
           type     = "http"
           path     = "/health"
@@ -148,9 +166,10 @@ EOF
           timeout  = "2s"
         }
       }
-    }
-  }
+    } # end products-api task
+  } # end products-api group
 
+  # Public API component
   group "public-api" {
     count = 1
 
@@ -162,22 +181,23 @@ EOF
     }
 
     task "public-api" {
-      driver = "docker"
+      artifact {
+        source = "https://github.com/hashicorp-demoapp/public-api/releases/download/v0.0.1/public-api"
+      }
+      driver = "raw_exec"
 
+      # Task relevant environment variables necessary
       env = {
         BIND_ADDRESS = ":8080"
         PRODUCT_API_URI = "http://products-api-server.service.consul:9090"
       }
 
+      # Comand to run the binary
       config {
-        image = "hashicorpdemoapp/public-api:v0.0.1"
-        dns_servers = ["172.17.0.1"]
-
-        port_map {
-          pub_api = 8080
-        }
+        command = "public-api"
       }
 
+      # Host machine resources required
       resources {
         #cpu    = 500
         #memory = 1024
@@ -188,12 +208,15 @@ EOF
           }
         }
       }
+
+      # Service definition to be sent to Consul with corresponding health check
       service {
         name = "public-api-server"
         port = "pub_api"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.public.rule=Path(`/public`)",
+          "traefik.http.routers.public.entrypoints=public",
+          "traefik.http.routers.public.rule=Path(`/`)",
         ]
         check {
           type     = "tcp"
@@ -204,12 +227,10 @@ EOF
     }
   }
 
+  # Frontend component providing user access to the application
+
   group "frontend" {
-    constraint {
-      attribute = "${attr.platform.gce.machine-type}"
-      value = "n2-highcpu-2"
-    }
-    count = 1
+    count = 3
 
     restart {
       attempts = 10
@@ -219,13 +240,15 @@ EOF
     }
 
     task "server" {
+      driver = "docker"
+
+      # Task relevant environment variables necessary
       env {
         PORT    = "${NOMAD_PORT_http}"
         NODE_IP = "${NOMAD_IP_http}"
       }
 
-      driver = "docker"
-
+      # Frontend Docker image location and configuration
       config {
         image = "hashicorpdemoapp/frontend:v0.0.3"
         dns_servers = ["172.17.0.1"]
@@ -234,17 +257,14 @@ EOF
         ]
       }
 
+      # Creation of the NGINX configuration file
       template {
         data = <<EOF
+resolver 172.17.0.1 valid=1s;
 server {
     listen       80;
     server_name  localhost;
-    #charset koi8-r;
-    #access_log  /var/log/nginx/host.access.log  main;
-    # proxy_http_version 1.1;
-    # proxy_set_header Upgrade $http_upgrade;
-    # proxy_set_header Connection "Upgrade";
-    # proxy_set_header Host $host;
+    set $upstream_endpoint public-api-server.service.consul;
     location / {
         root   /usr/share/nginx/html;
         index  index.html index.htm;
@@ -252,7 +272,7 @@ server {
     # Proxy pass the api location to save CORS
     # Use location exposed by Consul connect
     location /api {
-        proxy_pass http://public-api-server.service.consul:8080;
+        proxy_pass http://$upstream_endpoint:8080;
         # Need the next 4 lines. Else browser might think X-site.
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -270,6 +290,7 @@ EOF
         change_signal = "SIGHUP"
       }
 
+      # Host machine resources required
       resources {
         network {
           mbits = 10
@@ -279,6 +300,7 @@ EOF
         }
       }
 
+      # Service definition to be sent to Consul with corresponding health check
       service {
         name = "frontend"
         port = "http"
@@ -286,6 +308,9 @@ EOF
         tags = [
           # "traefik.enable=true",
           # "traefik.http.routers.frontend.rule=Path(`/frontend`)",
+          "traefik.enable=true",
+          "traefik.http.routers.frontend.entrypoints=frontend",
+          "traefik.http.routers.frontend.rule=Path(`/`)",
         ]
 
         check {
@@ -298,4 +323,3 @@ EOF
     }
   }
 }
-# To stop this job: nomad job stop -global hashicups

@@ -3,7 +3,12 @@ job "hashicups" {
   datacenters = ["dc1"]
 
   # Define Nomad Scheduler to be used (Service/Batch/System)
-  type     = "service"
+  type  = "service"
+
+  # Define update strategie
+  update {
+    canary  = 1
+  }
 
   # Each component is defined within it's own Group
   group "postgres" {
@@ -163,7 +168,10 @@ EOF
     }
 
     task "public-api" {
-      driver = "docker"
+      artifact {
+        source = "https://github.com/hashicorp-demoapp/public-api/releases/download/v0.0.1/public-api"
+      }
+      driver = "raw_exec"
 
       # Task relevant environment variables necessary
       env = {
@@ -171,14 +179,9 @@ EOF
         PRODUCT_API_URI = "http://products-api-server.service.consul:9090"
       }
 
-      # Public-api Docker image location and configuration
+      # Comand to run the binary
       config {
-        image = "hashicorpdemoapp/public-api:v0.0.1"
-        dns_servers = ["172.17.0.1"]
-
-        port_map {
-          pub_api = 8080
-        }
+        command = "public-api"
       }
 
       # Host machine resources required
