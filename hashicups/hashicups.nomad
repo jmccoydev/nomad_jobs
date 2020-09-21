@@ -90,7 +90,16 @@ job "hashicups" {
       delay    = "25s"
       mode     = "delay"
     }
-
+    
+    update {
+      max_parallel     = 1
+      canary           = 1
+      min_healthy_time = "30s"
+      healthy_deadline = "1m"
+      auto_revert      = true
+      auto_promote     = false
+    }
+    
     task "products-api" {
       driver = "docker"
 
