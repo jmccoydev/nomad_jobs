@@ -1,5 +1,18 @@
 job "postgres-sync-service" {
-  datacenters = ["dc1"]
+  multiregion {
+    strategy {
+      max_parallel = 1
+      on_failure   = "fail_all"
+    }
+    region "west" {
+      count = 1
+      datacenters = ["dc1"]
+    }
+    region "east" {
+      count = 1
+      datacenters = ["east-1"]
+    }
+  }
   type = "service"
 
   group "symmetric-process" {

@@ -1,16 +1,15 @@
 job "hashicups" {
   multiregion {
     strategy {
-      #max_parallel = 2
+      max_parallel = 1
       on_failure   = "fail_all"
-      # on_failure = "fail_local"
     }
     region "west" {
-      # count       = 1 #optional
+      count = 1
       datacenters = ["dc1"]
     }
     region "east" {
-      # count       = 1 #optional
+      count = 1
       datacenters = ["east-1"]
     }
   }
