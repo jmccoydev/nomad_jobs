@@ -5,7 +5,7 @@ job "hashicups" {
       on_failure   = "fail_all"
     }
     region "west" {
-      count = 1
+      count = 3
       datacenters = ["dc1"]
     }
     region "east" {
@@ -229,7 +229,7 @@ EOF
   # Frontend component providing user access to the application
 
   group "frontend" {
-    count = 3
+    count = 0
 
     restart {
       attempts = 10
